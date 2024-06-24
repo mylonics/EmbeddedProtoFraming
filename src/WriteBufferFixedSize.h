@@ -93,6 +93,16 @@ namespace EmbeddedProto
         }
         return return_value;
       }
+
+      //! \see ::EmbeddedProto::WriteBufferInterface::mutate()
+      bool mutate(const uint8_t byte, const size_t location) override
+      {
+        if (location < BUFFER_SIZE){
+          data_[location] = byte;
+          return true;
+        }
+        return false;
+      }
   
       //! Return a pointer to the data array.
       uint8_t* get_data()

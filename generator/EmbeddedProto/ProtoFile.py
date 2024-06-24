@@ -71,10 +71,24 @@ def toposort_add_msg(msg, namespace, dependency_data):
 
 # -----------------------------------------------------------------------------
 
-class ProtoFile:
-    def __init__(self, proto_descriptor):
-        self.descriptor = proto_descriptor
+def print_log(data):
+    with open("./log.txt", 'a') as file:
+            file.write(str(data))
+            file.write("\n")
 
+def get_enum_dictionary(proto_file, enum_name):
+        for enum in proto_file.enum_type:
+            if str(enum.name) == enum_name:
+                proto_ids = {}
+                for value in enum.value:
+                    proto_ids[value.name] = value.number
+                return proto_ids
+
+class ProtoFile:
+    def __init__(self, proto_descriptor, file_id):
+        self.descriptor = proto_descriptor
+        self.file_id = [file_id]
+        self.msg_ids = get_enum_dictionary(proto_descriptor, "MessageIds")
         if "proto2" == proto_descriptor.syntax:
             raise Exception(proto_descriptor.name + ": Sorry, proto2 is not supported, please use proto3.")
 

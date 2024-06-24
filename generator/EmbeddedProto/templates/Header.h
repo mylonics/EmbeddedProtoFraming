@@ -61,6 +61,10 @@
 namespace {{ namespace }} {
 {% endfor %}
 
+{% for file_id in proto_file.file_id %}
+const uint8_t FILE_ID = {{ file_id }};
+{% endfor %}
+
 {% for enum in proto_file.enum_definitions %}
 {{ enum.render(environment) }}
 

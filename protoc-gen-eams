@@ -36,4 +36,4 @@
 
 
 EmbeddedProtoDir=$(dirname "$0")
-$EmbeddedProtoDir/venv/bin/protoc-gen-eams
+$EmbeddedProtoDir/venv/bin/protoc-gen-eams --debug

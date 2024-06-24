@@ -69,6 +69,14 @@ namespace EmbeddedProto
       */
       virtual bool push(const uint8_t byte) = 0;
 
+      //! Mutate a single byte in the buffer.
+      /*!
+          \param[in] byte The data to append after previously added data in the buffer.
+          \param[in] location The data location to mutate.
+          \return True when mutation successful.
+      */
+      virtual bool mutate(const uint8_t byte, const size_t location) = 0;
+
       //! Push an array of bytes into the buffer.
       /*!
           The given array will be appended after already addded data in the buffer.
@@ -78,6 +86,11 @@ namespace EmbeddedProto
       */
       virtual bool push(const uint8_t* bytes, const uint32_t length) = 0;
       
+      //! returns raw ptr to raw data. Used for calculation of checksums.
+      /*!
+          \return pointer to data.
+      */
+      virtual uint8_t* get_data() = 0;
   };
 
 } // End of namespace EmbeddedProto

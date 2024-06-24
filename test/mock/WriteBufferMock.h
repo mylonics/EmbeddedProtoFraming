@@ -50,6 +50,7 @@ namespace Mocks
       
       MOCK_METHOD1(push, bool(uint8_t));
       MOCK_METHOD2(push, bool(const uint8_t*, const uint32_t));
+      MOCK_METHOD3(mutate, bool(const uint8_t, const size_t));
       
       MOCK_CONST_METHOD1(peak, bool(uint8_t&));
       MOCK_CONST_METHOD0(peak, uint8_t());
@@ -60,6 +61,7 @@ namespace Mocks
       MOCK_METHOD1(pop, bool(uint8_t&));
       MOCK_METHOD0(pop, uint8_t());
 
+      MOCK_METHOD3(get_data, uint8_t*());
   };
 
 } // End of namespace Mocks

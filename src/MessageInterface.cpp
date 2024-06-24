@@ -34,8 +34,38 @@
 
 namespace EmbeddedProto
 {
+  Error MessageInterface::serialize_with_base_frame_sysid(uint8_t sys_id, ::EmbeddedProto::WriteBufferInterface& buffer) const 
+  {
+    buffer.push(sys_id);
+    return serialize_with_base_frame(buffer);
+  }
 
-  Error MessageInterface::MessageInterface::serialize_with_id(uint32_t field_number, 
+  Error MessageInterface::serialize_with_frame(::EmbeddedProto::WriteBufferInterface& buffer) const 
+  {
+    buffer.clear();
+    buffer.push(SERIAL_FORMAT_START_BYTE_1);
+    buffer.push(SERIAL_FORMAT_1_START_BYTE_2);
+    auto res = serialize_with_base_frame(buffer);
+    if (res == ::EmbeddedProto::Error::NO_ERRORS) {
+      res = protobuf_framer::encode_checksum(buffer);
+    }
+    return res;
+  }
+
+  Error MessageInterface::serialize_with_frame(uint8_t sys_id, ::EmbeddedProto::WriteBufferInterface& buffer) const
+  {
+    buffer.clear();
+    buffer.push(SERIAL_FORMAT_START_BYTE_1);
+    buffer.push(SERIAL_FORMAT_2_START_BYTE_2);
+    auto res = serialize_with_base_frame_sysid(sys_id, buffer);
+    if (res == ::EmbeddedProto::Error::NO_ERRORS) {
+      res = protobuf_framer::encode_checksum(buffer);
+    }
+    return res;
+  }
+
+
+  Error MessageInterface::serialize_with_id(uint32_t field_number, 
                                                               ::EmbeddedProto::WriteBufferInterface& buffer,
                                                               const bool optional) const
   {

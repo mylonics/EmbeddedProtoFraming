@@ -32,6 +32,7 @@
 #define _MESSAGE_INTERFACE_H_
 
 #include "WireFormatter.h"
+#include "Framing.h"
 #include "Fields.h"
 #include "Errors.h"
 
@@ -48,6 +49,14 @@ class MessageInterface : public ::EmbeddedProto::Field
     MessageInterface() = default;
 
     ~MessageInterface() override = default;
+
+    Error serialize_with_frame(WriteBufferInterface& buffer) const;
+
+    Error serialize_with_frame(uint8_t sys_id, WriteBufferInterface& buffer) const;
+
+    Error serialize_with_base_frame_sysid(uint8_t sys_id, WriteBufferInterface& buffer) const;
+
+    virtual Error serialize_with_base_frame(WriteBufferInterface& buffer) const = 0;
 
     //! \see Field::serialize_with_id()
     Error serialize_with_id(uint32_t field_number, 

@@ -30,7 +30,7 @@
 
 import io
 import sys
-from EmbeddedProto.ProtoFile import ProtoFile
+from EmbeddedProto.ProtoFile import ProtoFile, print_log, get_enum_dictionary
 from google.protobuf.compiler import plugin_pb2 as plugin
 import jinja2
 from importlib.resources import path as resource_path
@@ -38,8 +38,13 @@ from importlib.resources import path as resource_path
 
 # -----------------------------------------------------------------------------
 
-
 def generate_code(request, respones):
+    file_ids = None
+    for proto_file in request.proto_file:
+        file_ids = get_enum_dictionary(proto_file, "ProtoIds")
+        if file_ids:
+            break
+    
     # Create definitions for al proto files in the request except for our own options file which is not required in cpp
     # code. First also ignore the google descriptor file, only add it later if it is required by the user.
     file_definitions = []
@@ -48,7 +53,9 @@ def generate_code(request, respones):
     for proto_file in request.proto_file:
         if ("embedded_proto_options.proto" not in proto_file.name) and \
            ("google/protobuf/descriptor.proto" not in proto_file.name):
-            file_definitions.append(ProtoFile(proto_file))
+            calculated_file_id = proto_file.name.split(".")[0].upper()
+            file_id = file_ids.get(calculated_file_id, 0)
+            file_definitions.append(ProtoFile(proto_file, file_id))
             if "google/protobuf/descriptor.proto" in file_definitions[-1].descriptor.dependency:
                 add_google_descriptor_file = True
 
@@ -60,7 +67,7 @@ def generate_code(request, respones):
     # defined proto files.
     if add_google_descriptor_file and google_descriptor_file:
         # Insert it at the front so the header file will include it before the classes requiring it.
-        file_definitions.insert(0, ProtoFile(google_descriptor_file))
+        file_definitions.insert(0, ProtoFile(google_descriptor_file, 0))
 
     # Obtain all definitions made in all the files to properly link definitions with fields using them. This to properly
     # create template parameters.

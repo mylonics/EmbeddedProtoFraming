@@ -95,6 +95,19 @@ namespace EmbeddedProto
         return true;
       }
 
+      //! Increment the size with the given length.
+      bool mutate(const uint8_t byte, const size_t location) override
+      {
+        // Ignore the unused parameter
+        (void)byte;
+        (void)location;
+        return true;
+      }
+
+      uint8_t* get_data() override
+      {
+        return 0;
+      }
 
     private:
 

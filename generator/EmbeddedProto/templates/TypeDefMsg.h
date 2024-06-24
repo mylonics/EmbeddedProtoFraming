@@ -31,9 +31,21 @@ Postal address:
 {% for tmpl_param in typedef.get_templates() %}
 {{"template<\n" if loop.first}}    {{tmpl_param['type']}} {{tmpl_param['name']}}{{", " if not loop.last}}{{"\n>" if loop.last}}
 {% endfor %}
+
 class {{ typedef.get_name() }} final: public ::EmbeddedProto::MessageInterface
 {
   public:
+    struct raw {
+      {% for field in typedef.fields %}
+      {% if field.get_cstdint_type %}
+      {{field.get_cstdint_type()}} {{field.get_name()}};
+      {% else %}
+      {{field.get_type_as_defined()}} {{field.get_name()}};
+      {% endif %}
+      {% endfor %}
+    };
+
+    const MessageIds MSG_ID = MessageIds::{{typedef.get_name().upper()}};
     {{ typedef.get_name() }}() = default;
     {{ typedef.get_name() }}(const {{typedef.get_name()}}& rhs )
     {
@@ -76,6 +88,13 @@ class {{ typedef.get_name() }} final: public ::EmbeddedProto::MessageInterface
       {% endfor %}
       {% for oneof in typedef.oneofs %}
       {{ TypeOneof.assign(oneof)|indent(6) }}
+      {% endfor %}
+    }
+
+    {{ typedef.get_name() }}(const struct {{typedef.get_name()}}::raw& rhs )
+    {
+      {% for field in typedef.fields %}
+      set_{{ field.get_name() }}(rhs.{{ field.get_name() }});
       {% endfor %}
     }
 
@@ -143,6 +162,14 @@ class {{ typedef.get_name() }} final: public ::EmbeddedProto::MessageInterface
       return *this;
     }
 
+    {{ typedef.name }}& operator=(const struct {{ typedef.name }}::raw& rhs)
+    {
+      {% for field in typedef.fields %}
+      set_{{ field.get_name() }}(rhs.{{ field.get_name() }});
+      {% endfor %}
+      return *this;
+    }
+
     {% for field in typedef.fields %}
     {{ field.render_get_set(environment)|indent(4) }}
 
@@ -155,6 +182,20 @@ class {{ typedef.get_name() }} final: public ::EmbeddedProto::MessageInterface
 
     {% endfor %}
     {% endfor %}
+
+    ::EmbeddedProto::Error serialize_with_base_frame(::EmbeddedProto::WriteBufferInterface& buffer) const
+    {
+      buffer.push(FILE_ID);
+      buffer.push((uint8_t) MSG_ID);
+      size_t starting_size = buffer.get_size();
+      buffer.push(0);
+      ::EmbeddedProto::Error res = serialize(buffer);
+      if (res == ::EmbeddedProto::Error::NO_ERRORS) {
+        size_t payload_size = buffer.get_size() - starting_size - 1;
+        buffer.mutate(payload_size, starting_size);
+      }
+      return res;
+    }
 
     ::EmbeddedProto::Error serialize(::EmbeddedProto::WriteBufferInterface& buffer) const override
     {
@@ -350,6 +391,14 @@ class {{ typedef.get_name() }} final: public ::EmbeddedProto::MessageInterface
     }
 
 #endif // End of MSG_TO_STRING
+
+      struct raw get_base_struct(){
+        return {
+          {% for field in typedef.fields %}
+          .{{field.get_name()}} = {{field.get_variable_name()}},
+          {% endfor %}
+        };
+      };
 
   private:
 
